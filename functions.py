@@ -4,14 +4,21 @@ import itertools
 import csv
 import os
 
+
+
+
 def run_bash_command(command):
     process = subprocess.Popen(command, shell=True)
     return process
 
+
+
 def are_processes_running(processes):
     return any(process.poll() is None for process in processes)
 
-def mcpat(ejemplo=0):
+
+
+def mcpat():
     programs = [
     "h264_dec",
     "h264_enc",
@@ -20,11 +27,12 @@ def mcpat(ejemplo=0):
     "mp3_dec",
     "mp3_enc"
     ]
-    if ejemplo!=0:
-        comands = f"python3 ../scripts/McPAT/gem5toMcPAT_cortexA76.py {programs[0]}/stats.txt {programs[0]}/config.json ../scripts/McPAT/ARM_A76_2.1GHz.xml"
-        mcpat_commands = "./../mcpat/mcpat -infile ../mcpat/ProcessorDescriptionFiles/ARM_A9_2GHz_withIOC.xml "
-        subprocess.run(comands + "&&" + mcpat_commands+ f"> energy.txt", shell=True )
-    return False
+    #if ejemplo!=0:
+    #    print("esto es una prueba")
+    #    comands = f"python3 ../scripts/McPAT/gem5toMcPAT_cortexA76.py {programs[0]}/stats.txt {programs[0]}/config.json ../scripts/McPAT/ARM_A76_2.1GHz.xml"
+    #    mcpat_commands = "./../mcpat/mcpat -infile ../mcpat/ProcessorDescriptionFiles/ARM_A9_2GHz_withIOC.xml "
+    #    subprocess.run(comands + "&&" + mcpat_commands+ f"> energy.txt", shell=True )
+    #return False
 
     
     mcpatpy_commands = [
@@ -37,11 +45,14 @@ def mcpat(ejemplo=0):
     ]
     #  ./mcpat -infile <*.xml>  -print_level < level of detailed output>
     #  ./mcpat -h (or mcpat --help) will show the quick help message.
-    mcpat_commands = "./../mcpat/mcpat -infile config.xml.xml "
+    mcpat_commands = "./../mcpat/mcpat -infile config.xml"
     i=0
     for comands in mcpatpy_commands:
-        subprocess.run(comands + "&&" + mcpat_commands+ f"> {programs[i]}/energy.txt", shell=True )
+        subprocess.run(comands, shell=True )
+        subprocess.run(mcpat_commands+ f"> {programs[i]}/energy.txt", shell=True )
         i+=1
+
+
 
 def extract_potencia(nombre_archivo):
 
@@ -86,6 +97,8 @@ def extract_potencia(nombre_archivo):
     #print(f"Suma (Total leakage + Runtime Dynamic): {resultado}")
     return resultado
 
+
+
 def extract_stats(file_path):
     simInsts = None
     system_cpu_cpi = None
@@ -105,6 +118,8 @@ def extract_stats(file_path):
 
     return simInsts, system_cpu_cpi, system_cpu_ipc
 
+
+
 def eval_state(estado):
     programs = [
     "h264_dec",
@@ -116,7 +131,7 @@ def eval_state(estado):
     ]
 
     parametros=["--l1i_size=","--num_fu_intALU=","--num_fu_read=","--num_fu_write=","--num_fu_FP_SIMD_ALU="]
-    parametro0=["32kB ","64kB ","128kB ","256kB "]
+    parametro0=["64kB ","128kB ","256kB ","512kB"]
     parametro1=["2 ","4 ","6 ","8 "]
     parametro2=["2 ","4 ","6 ","8 "]
     parametro3=["2 ","4 ","6 ","8 "]
@@ -133,7 +148,7 @@ def eval_state(estado):
     
     program_options = [
         f"{programs_path[0]}h264dec_testfile.264 {programs_path[0]}h264dec_outfile.yuv",
-        f"{programs_path[1]}h264enc_configfile.cfg -org {programs_path[1]}h264enc_testfile.yuv -org ",
+        f"{programs_path[1]}h264enc_configfile.cfg -org {programs_path[1]}h264enc_testfile.yuv -bf {programs_path[1]}h264enc_testfile.264 ",
         f"-i {programs_path[2]}jpg2kdec_testfile.j2k -o {programs_path[2]}jpg2kdec_outfile.bmp",
         f"-i {programs_path[3]}jpg2kenc_testfile.bmp -o {programs_path[3]}jpg2kenc_outfile.j2k",
         f"-w {programs_path[4]}mp3dec_outfile.wav {programs_path[4]}mp3dec_testfile.mp3",
@@ -171,7 +186,11 @@ def eval_state(estado):
 
     print("Todos los procesos han terminado.")
 
+
+
 def save_new_data(estado):
+
+    mcpat()
 
     programs = [
     "h264_dec",
@@ -181,61 +200,77 @@ def save_new_data(estado):
     "mp3_dec",
     "mp3_enc"
     ]
-    
+
     results_file = "Results.csv"
     avg_results_file = "AvgResults.csv"
     csv_writer=0
     avg_csv_writer=0
     experimento=0
+    
     # Verificar si el archivo de resultados existe y escribir encabezados si no
     if not os.path.exists(results_file):
         with open(results_file, mode="a", newline="") as file:
             csv_writer = csv.writer(file)
-            csv_writer.writerow(["Experimento", "Programa", "Parametro 1", "Parametro 2", "Parametro 3", "Parametro 4", "Parametro 5", "simInsts", "system_cpu_cpi", "system_cpu_ipc", "CPUtime","energy"])  # Escribir los encabezados
-    else:
-        with open(results_file, mode="a", newline="") as file:
-            csv_writer = csv.writer(file)
+            csv_writer.writerow(["Experimento", "Programa", "Parametro 1", "Parametro 2", "Parametro 3", "Parametro 4", "Parametro 5", "simInsts", "system_cpu_cpi", "system_cpu_ipc", "CPUtime","power","EDP"])  # Escribir los encabezados
 
     # Verificar si el archivo de promedios existe y escribir encabezados si no
     if not os.path.exists(avg_results_file):
         with open(avg_results_file, mode="a", newline="") as avg_file:
             avg_csv_writer = csv.writer(avg_file)
-            avg_csv_writer.writerow(["Experimento", "avg_cpi", "avg_ipc", "CPU time","avg_energy"])  # Escribir encabezados para el CSV de promedios
+            avg_csv_writer.writerow(["Experimento", "avg_cpi", "avg_ipc", "avg_CPU_time","avg_power","avg_EDP"])  # Escribir encabezados para el CSV de promedios
     else:
-        with open(avg_results_file, mode="a", newline="") as avg_file:
-            avg_csv_writer = csv.writer(avg_file)
-            experimento = sum(1 for _ in avg_csv_writer) - 1
-            avg_csv_writer = csv.writer(avg_file)
+        with open(avg_results_file, 'r') as avg_file:
+            reader = csv.reader(avg_file)
+            experimento = sum(1 for _ in reader) - 1
 
     #crea los archivos de potencia
-    mcpat()
 
     # Guardar los resultados en el archivo CSV y calcular promedios
     total_cpi = 0
     total_ipc = 0
     total_cput = 0
+    total_EDP = 0
     total_energy = 0
-    avg_DET = 0 
+     
     for i in range(6):
         simInsts, system_cpu_cpi, system_cpu_ipc = extract_stats(f"{programs[i]}/stats.txt")
         energy = extract_potencia(f"{programs[i]}/energy.txt")
+        energy = energy * system_cpu_cpi
         
         # Sumar los valores de CPI e IPC para promediar en la última fila
         total_cpi += system_cpu_cpi
         total_ipc += system_cpu_ipc
+        
+        #CPU time = IC * CPI * CT
         cpu_time = simInsts * system_cpu_cpi * (1 / (2.1 * 10**9))
         total_cput += cpu_time
+        
+        #Energy = (Total leakage + Runtime Dynamic) * System.cpu.cpi
+        total_energy += energy
+        #Energy-Delay Product (EDP)
+        EDP = energy*system_cpu_cpi
+        total_EDP += EDP
 
         if i == 5:  # En el sexto programa, escribir promedios en columnas "avg_cpi" y "avg_ipc"
             avg_cpi = total_cpi / 6
             avg_ipc = total_ipc / 6
             avg_cpu = total_cput / 6
             avg_energy = total_energy / 6
-            avg_DET = avg_energy*(avg_cpi**2)
-            csv_writer.writerow([experimento, programs[i], estado[0], estado[1], estado[2], estado[3], estado[4], simInsts, system_cpu_cpi, system_cpu_ipc, cpu_time,energy*(system_cpu_cpi**2)])
-            avg_csv_writer.writerow([experimento, avg_cpi, avg_ipc, avg_cpu, avg_DET])  # Guardar avg_cpi y avg_ipc en el nuevo CSV
-        else:
-            csv_writer.writerow([experimento, programs[i], estado[0], estado[1], estado[2], estado[3], estado[4], simInsts, system_cpu_cpi, system_cpu_ipc, cpu_time, cpu_time,energy*(system_cpu_cpi**2)])
+            avg_EDP = total_EDP / 6
+
+            with open(results_file, mode="a", newline="") as file:
+                csv_writer = csv.writer(file)
+                csv_writer.writerow([experimento, programs[i], estado[0], estado[1], estado[2], estado[3], estado[4], simInsts, system_cpu_cpi, system_cpu_ipc, cpu_time, energy , EDP])
+            
+            with open(avg_results_file, mode="a", newline="") as avg_file:
+                avg_csv_writer = csv.writer(avg_file)
+                avg_csv_writer.writerow([experimento, avg_cpi, avg_ipc, avg_cpu , avg_energy, avg_EDP])  # Guardar avg_cpi y avg_ipc en el nuevo CSV
         
-    return avg_DET
+        else:
+
+            with open(results_file, mode="a", newline="") as file:
+                csv_writer = csv.writer(file)
+                csv_writer.writerow([experimento, programs[i], estado[0], estado[1], estado[2], estado[3], estado[4], simInsts, system_cpu_cpi, system_cpu_ipc, cpu_time, energy, EDP])
+         
+    return avg_EDP
 

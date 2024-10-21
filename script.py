@@ -27,11 +27,13 @@ def generar_nuevo_punto(estado,n=5):
         # Verificar si se repite la operación sobre el mismo índice
         if random.random() >= 0.3:
             return estado
+    if estado_viejo == estado:
+        return generar_nuevo_punto(estado,n=5)
 
 # Parámetros del recocido simulado
 def recocido_simulado(funcion_objetivo, generar_nuevo_punto, temperatura_inicial, factor_enfriamiento, iteraciones):
     # Punto inicial (ajustar según el problema)
-    x_actual = random.uniform(-10, 10)
+    x_actual = [0,0,0,0,0]
     mejor_x = x_actual
     mejor_valor = funcion_objetivo(x_actual)
     
@@ -63,10 +65,10 @@ def recocido_simulado(funcion_objetivo, generar_nuevo_punto, temperatura_inicial
 
 # Ajuste de los parámetros
 probabilidad_cambio = 0.9  # Probabilidad inicial del 90%
-delta_inicial = 1.0  # Supongamos un cambio inicial de 1.0 en la función objetivo
+delta_inicial = 2.0  # Supongamos un cambio inicial de 1.0 en la función objetivo
 temperatura_inicial = -delta_inicial / math.log(probabilidad_cambio)  # Ajusta la temperatura para un 90% de probabilidad
 factor_enfriamiento = 0.7  # Ajusta la velocidad de enfriamiento
-iteraciones = 1000  # Ajusta el número de iteraciones
+iteraciones = 14  # Ajusta el número de iteraciones
 
 # Ejecutar el recocido simulado
 mejor_x, mejor_valor = recocido_simulado(funcion_objetivo, generar_nuevo_punto, temperatura_inicial, factor_enfriamiento, iteraciones)
