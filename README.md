@@ -8,7 +8,7 @@ Este es el repositorio para la entrega del trabajo de simulación de microarquit
 Para usar el algoritmo desarrollado se debe clonar el repositorio dentro de la carpeta ~/mySimTools. Asegurarse que las carpetas tengan los siguientes nombres y contenidos para el correcto funcionamiento del algoritmo:
 
 <p align="center">
-  <img src="Path.png" alt="path" width="200"/>
+  <img src="Path.png" alt="path" width="600"/>
 </p>
   
 ## Desarrollado por:
