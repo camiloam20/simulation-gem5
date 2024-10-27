@@ -4,3 +4,7 @@ jpg2k_dec/
 jpg2k_enc/
 mp3_dec/
 mp3_enc/
+config.xml
+Results.csv
+AvgResults.csv
+__pycache__/
